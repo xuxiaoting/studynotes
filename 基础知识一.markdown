@@ -1,0 +1,314 @@
+###基础知识(一)  
+1 . 对于多个按钮时，若按钮点击了要设置好按钮点击状态；应该用第一种方法    
+
+```   
+button.selected = YES;  
+[button setTitle:title forState:UIControlStateSelected];  // 这种并不是设置选中状态     
+```  
+  
+2 . 设置图片上边圆角下边直角，或者上边直角下边圆角  
+  
+  ```  
+  UIBezierPath *bezierPath = [UIBezierPath bezierPathWithRoundedRect:_imageView.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii:CGSizeMake(5, 5)];
+  CAShapeLayer *maskLayer = [CAShapeLayer layer];
+  maskLayer.frame = _imageView.bounds;
+  maskLayer.path = bezierPath.CGPath;
+  _imageView.layer.mask = maskLayer;  
+  ```  
+    
+ 3 . 设置 `UITableViewCell` 选中效果后，再返回时去掉选中效果  
+   
+   ```  
+  - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+   // [super setSelected:selected animated:animated];
+  }  // 只需将cell里的此方法里的内容注释即可
+   ```    
+     
+ 4 . 设置按钮等控件选中时  
+   
+   ```  
+  - (void)setSelected:(BOOL)selected
+  { 
+   	  [super setSelected:selected];
+   	  //
+  }
+   ```  
+     
+  5 . 将数组中的元素取出来，拼接成一个字符串
+  
+  ```
+  NSString *string = [array componentsJoinedByString:@","]; // ","--分隔符
+  ```
+   
+  6 . `UITextView` 点击回车时触发事件
+  
+  ```
+  // 如果允许继续输入，那么返回YES，否则返回NO
+  －(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange *)range replacementText:(NSString *)text
+  {
+      if ([text isEqualToString:@“\n”]) {
+          [self searchBtnClick];    // 搜索事件
+          return NO;
+      }
+     return YES;
+  }
+
+  ```  
+    
+  7 . `UITableView` 局部刷新
+  
+  ```
+  //局部section刷新
+  NSIndexSet * nd=[[NSIndexSet alloc]initWithIndex:1]; // 刷新第二个section
+  [tview reloadSections:nd withRowAnimation:UITableViewRowAnimationAutomatic];
+    
+  //局部cell刷新
+  NSIndexPath *te=[NSIndexPath indexPathForRow:2 inSection:0]; // 刷新第一个section的第二行
+  [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:te,nil] withRowAnimation:UITableViewRowAnimationMiddle];
+  
+  // 刷新列表
+  [tableView reloadData];
+  ```
+  **注意:**    
+    
+  * `UITableView` 在iOS8(手机)以后：不需要再另外写一个计算cell高的方法，在调用 `cellForRowAtIndexPath:` 方法时，会自动调用 `heightForRowAtIndexPath：`方法。所以在 `            cellForRowAtIndexPath` 方法里将高赋值，再 `heightForRowAtIndexPath` 方法里取出来即可。   
+   
+  * 在iOS8之前，还是需要先计算高，再绘制cell。所以为了兼容iOS8之前的版本，苹果系统还是会先调用 `heightForRowAtIndexPath` 方法，再调用 `cellForRowAtIndexPath` 方法，再调用`heightForRowAtIndexPath` 方法。  
+
+8 . 这样写在IOS7.0以后 `TableViewCell` 的分割线就不会往右挫15个像素点了 
+
+```
+UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:SimpleTableIdentifier];  
+[tableView setSeparatorInset:UIEdgeInsetsMake(0,0,0,0)];
+```  
+  
+  9 .  `UITableView` 设置cell 的上下间隙  
+    
+  * 自定义cell，并且在cell内部设置间隙  
+  * 将 `tableview` 分组，每组定义一行内容（即一个cell），并设置每组的 `headerView` 和 `footerView`  
+  **例如：**  
+  
+  ```
+  - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView  // 设置表格有几个分组
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section // 第section个分段有多少行  
+  
+  注意：在下面方法中
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+         [_array objectAtIndex:indexPath.section]；// 将indexPath.row 改为indexPath.section
+}
+  ```  
+    
+10 . ios7以下的系统 `label` 默认背景是白色  
+  
+11 . `clipsToBounds：`    
+
+**作用：**决定了子视图的显示范围。  
+  当取值为YES时，剪裁超出父视图范围的子视图部分；  
+  当取值为NO时，不剪裁子视图（超出部分继续显示，例如在scrollview中。。。）。默认值为NO。  
+    
+12 . 图片排版 `UIViewContentMode`  :  [图片排版](<http://justsee.iteye.com/blog/1774083>)   
+  
+13 . 自动折行设置 `UILineBreakModeWordWrap`  
+  
+   `NSLineBreakByWordWrapping` : 以单词为单位换行，以单位为单位截断。
+   `NSLineBreakByCharWrapping` : 以字符为单位换行，以单位为单位截断。  
+ `NSLineBreakByClipping` : 以单词为单位换行。以字符为单位截断。
+   `NSLineBreakByTruncatingHead` : 以单词为单位换行。如果是单行，则开始部分有省略号。如果是多行，则中间有省略号，省略号后面有4个字符。**"...wxyz"**  
+ `NSLineBreakByTruncatingTail` ,  **"abcd..."**  
+ `NSLineBreakByTruncatingMiddle` **"ab...yz"**   
+   
+14 . `UILabel : adjustsFontSizeToFitWidth`  
+  
+  当这个属性是YES，标签可能改变标签文本的字母间距，以使该文本更适合标签的边界内。此属性的字符串，而不管当前行的行的裁剪模式。该属性的默认值是NO。  
+ 假设文字内容为@"曾在月光之下望烟花,曾共看夕阳渐降下"，Label长度为200，则一行显示不下，若设置此属性为YES，则会降低字体大小，以显示全部内容。  
+   
+ 15 . UITextField : contentVerticalAlignment  
+   
+   控件如何在垂直方向上布置自身的内容。默认是将内容顶端对其.  
+   对于文本字段，可能会改成 `UIControlContentVerticalAlignmentCenter`  
+   对于这个字段，可以使用下列诸值:  
+     
+   * UIControlContentVerticalAlignmentCenter 
+   * UIControlContentVerticalAlignmentTop
+   * UIControlContentVerticalAlignmentBottom
+   * UIControlContentVerticalAlignmentFill  
+      
+**`contentHorizontalAlignment` (同理，水平方向)**  
+  
+ 16 . `UITextField  :  clearButtonMode`  
+   
+   输入框中是否有个叉号，在什么时候显示，用于一次性删除输入框中的内容  
+     
+ 17 . `NSUserDefaults`  
+   
+   适合存储轻量级的本地数据，比如要保存一个登陆界面的数据，用户名、密码之类的，个人觉得使用 `NSUserDefaults` 是首选。下次再登陆的时候就可以直接从 `NSUserDefaults` 里面读取上次登陆的信息咯。 `NSUserDefaults` 存储的对象全是不可变的，取数据也是一样的，从 `NSUserDefaults` 取出的数据都是不可变的。
+   
+   ```
+  // 向NSUserDefaults存数据
+  [[NSUserDefaults standardUserDefaults] setObject: cacheTimeInterval forKey:@"heart_timeInterval”];
+  [[NSUserDefaults standardUserDefaults] synchronize];
+  
+  // 从NSUserDefaults取数据
+  NSString *cacheTimeInterval = [[NSUserDefaults standardUserDefaults] stringForKey:@"heart_timeInterval”];
+   ```  
+     
+ 18 . `UIButton` 上默认图片和文字横向排列，可以自定义图片和文字的位置
+ 
+ ```
+ - (CGRect)imageRectForContentRect:(CGRect)contentRect   
+ - (CGRect)titleRectForContentRect:(CGRect)contentRect
+ ```  
+   
+ 19 . 去掉字符串两端的空格
+ 
+ ```
+ [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] 
+ ```  
+   
+ 20 . 设置图片不拉伸，超出部分截掉  （两个属性一起用）(图片大的情况下)
+ 
+ ```
+ _picImage.contentMode = UIViewContentModeScaleAspectFill; // 设置图片不拉伸
+ _picImage.clipsToBounds = YES; // 超出部分截掉
+ ```    
+ **注意:**  
+   
+   按钮不可以做拉伸处理，只能做剪裁处理.   
+    
+ * 如果一个按钮上想要放一个比较小的图片，图片不会撑满整个按钮，所以这种情况只能将按钮换成 `UIImageView` 。
+ * 如果一个按钮上想要放一个比较大的图片，超出按钮部分的图片可以裁掉，用上面的两个属性.
+   
+21 . 实现图片高斯模糊效果 ：`CIContext` 或者 `GPUImage`
+
+```
+  CIContext *context = [CIContext contextWithOptions:nil];
+  CIImage *image = [CIImage imageWithCGImage:tempImage.CGImage];
+  CIFilter *filter = [CIFilter filterWithName:@"CIGaussianBlur"];
+  [filter setValue:image forKey:kCIInputImageKey];
+  [filter setValue:@(blur) forKey: @"inputRadius"];
+  CIImage *result = [filter valueForKey:kCIOutputImageKey];
+  CGImageRef outImage = [context createCGImage: result fromRect:[result extent]];
+  UIImage * blurImage = [UIImage imageWithCGImage:outImage];
+  return blurImage;
+  
+  或
+  
+  GPUImageGaussianBlurFilter * blurFilter = [[GPUImageGaussianBlurFilter alloc] init];
+  blurFilter.blurRadiusInPixels = 2.0;
+  UIImage * image = [UIImage imageNamed:@"xxx"];
+  UIImage *blurredImage = [blurFilter imageByFilteringImage:image];
+```  
+  
+ 22 . 设置应用程序图标右上角的红色提醒数字  
+ 
+ ```
+  @property （nonatomic）NSInteger applicationIconBadgeNumber；
+  [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
+ ```   
+   
+  23 . `edgesForExtendedLayout`  
+    
+   是一个类型为 `UIExtendedEdge` 的属性，指定边缘要延伸的方向。它的默认值很自然地是 `UIRectEdgeAll` ，四周边缘均延伸  
+     
+  24 . `UIView` 层次管理  
+    
+   将一个UIView显示在最前面调用其父视图的 `bringSubviewToFront（）` 方法。  
+   将一个UIView层推送到背后调用其父视图的 `sendSubviewToBack（）` 方法。  
+   用第二层子视图 换 第一层子视图的位置  self.view是第0层，用下面的方法：  
+   `[self.view exchangeSubviewAtIndex:1 withSubviewAtIndex:2]`   
+     
+   25 . `dictionaryWithObjectsAndKeys`  
+     
+   该方法在遇到nil对象时，会以为是最终的结束标志  
+     
+   26 . 通知：｀addObserver:selector:name:object:｀  
+     
+   `name` ：接收通知的名字  
+   `object` ：指定的对象  
+   将 `name` 改为 `nil` ,那么观察者将接收到 `object` 对象的所有消息，但是确定不了接收这些消息的顺序。`object` 为 `nil` ，那么客户对象（self）将收到任何对象发出的通知。如果既没有指定指定 `object` ，也没有指定 `name` ，那么该观察者将收到所有对象的所有消息。  
+     
+   27 . `addEntriesFromDictionary` : 向字典里添加数据  
+     
+   28 . **http**和**https**区别：    
+   
+   * **https**协议需要到**ca**申请证书，一般免费证书很少，需要交费。
+   * **http**是超文本传输协议，信息是明文输入，**https**则是具有安全性的**ssl**加密传输协议
+   * **http**和**https**使用的是完全不同的连接方式，用的端口也不一样，前者是**80**，后者是**443**
+   * **http**的连接很简单，是无状态的
+   * **https**协议是由**SSL＋HTTP**协议构建的可进行加密传输、身份认证的网络协议，要比**http**协议安全。  
+
+29 . `@synchronized `  
+  
+  代表这个方法加锁, 相当于不管哪一个线程（例如线程A），运行到这个方法时,都要检查有没有其它线程例如B正在用这个方法，有的话要等正在使用 `synchronized` 方法的线程B运行完这个方法后再运行此线程A,没有的话,直接运行。它包括两种用法：`synchronized` 方法和 `synchronized` 块。  
+    
+30 . `break` 和 `continue` 的区别  
+  
+  `break` 是直接跳出循环体，而 `continue` 是跳过循环体中余下的语句，继续执行循环。  
+  `break` 是结束整个循环体，`continue` 是结束单次循环  
+    
+31 .  `for` 循环和 `while` 区别  
+  
+  `for` 循环适用于已知循环次数，`while` 循环适用于未知循环次数。  
+    
+32 .  `try、catch、finally、throw、throws`  
+  
+  运行到**try**块中，如果有异常抛出，则转到**catch**块, **catch**块执行完毕后，执行**finally**块的代码，再执行**finally**块后面的代码。如果没有异常抛出，执行完**try**块，也要去执行**finally**块的代码。 然后执行**finally**块后面的语句. **throw** 是语句抛出一个异常；**throws** 是方法抛出一个异常；**throws** 可以单独使用，但 **throw** 不能； **throw**要么和**try-catch-finally**语句配套使用，要么与**throws**配套使用。但**throws**可以单独使用，然后再由处理异常的方法捕获。  
+    
+ 33 . 随机数的使用 `arc4random()`  
+   
+   0～X-1之间的整数：`arc4random()%x; `   
+   1～X之间的整数：`(arc4random()%x)+1;`  
+     
+ 34 .  查询字符串  
+   
+   `rangeOfString`: 查询字符串只查询一次，遇到相同的字符串时跳过。  
+     
+   **解决办法：**
+   
+   ```
+ - (NSArray *)rangesOfString:(NSString *)searchString inString:(NSString *)str
+ {
+    NSMutableArray *results = [NSMutableArray array];
+    NSRange searchRange = NSMakeRange(0, [str length]);
+    NSRange range;
+    while ((range = [str rangeOfString:searchString options:0 range:searchRange]).location != NSNotFound) {
+        [results addObject:[NSValue valueWithRange:range]];
+        searchRange = NSMakeRange(NSMaxRange(range), [str length] - NSMaxRange(range));
+    }
+    return results;
+ } 
+ // 这样写完之后，查询到相同的字符串试不会跳过。只需要遍历result数组，分别取出字符串所在的位置即可。
+   ```  
+     
+ 35 . `UIWindow`  
+   
+  `UIWindow` 是在所有页面的最上层。而且一个项目里只有一个 `UIWindow` 。  
+  创建一个` UIWindow` ：` UIWindow ＊window = [[UIApplication sharedApplication] keyWindow]`;    
+    
+ 36 . 负数取模  
+   
+   `用 abs() ； 例如 x = - 8; 则 abs(x) = 8;`  
+     
+  37 . 删除数组中相同元素  
+    
+   * 方法一：不改变数组中元素顺序
+
+   ``` 
+   	NSMutableArray *array = [[NSMutableArray alloc] init];
+	for (int i = 0; i < searchArray.count; i ++) {
+	    if ([array containsObject:[searchArray  objectAtIndex:i]] == NO) {
+        [array addObject:[searchArray objectAtIndex:i]];
+    } 
+} // array就是去重后的数组
+   ```  
+     
+   * 方法二：有可能改变数组中元素顺序
+
+   ```
+   NSArray *arr = @[@111,@222,@111]; 
+   NSSet *set = [NSSet setWithArray:arr]; // set就是去重后的数组
+   ```  
+     
+38 . 按钮点击的方法不能被复用（即最好不要用另一个方法调用按钮点击的方法），如果需要复用，则重新定义一个方法A，按钮点击方法和另一个方法都调用方法A  
+  
+  
